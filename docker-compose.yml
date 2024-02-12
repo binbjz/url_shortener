@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  web:
+    build: ./src
+    command: |
+      bash -c "while ! nc -z db 27017;do sleep 1;done;uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000"
+    volumes:
+      - ./src/:/usr/src/app/
+    ports:
+      - "8002:8000"
+
+  db:
+    image:
+    volumes:
+      - mongo_data:/var/lib/mongo
+    expose:
+      - 27017
+
+volumes:
+  mongo_data:
