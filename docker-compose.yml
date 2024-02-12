@@ -11,7 +11,7 @@ services:
       - "8002:8000"
 
   db:
-    image:
+    image: mongo:7.0.5-jammy
     volumes:
       - mongo_data:/var/lib/mongo
     expose:
