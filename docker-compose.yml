@@ -14,8 +14,8 @@ services:
     image: mongo:7.0.5-jammy
     volumes:
       - mongo_data:/var/lib/mongo
-    expose:
-      - 27017
+    ports:
+      - "27017:27017"
 
 volumes:
   mongo_data:
