@@ -4,7 +4,19 @@ services:
   web:
     build: ./src
     command: |
-      bash -c "while ! nc -z db 27017;do sleep 1;done;uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000"
+      bash -c "
+      timeout=30
+      while ! nc -z db 27017; do
+        sleep 1
+        timeout=$((timeout - 1))
+        if [ $$timeout -le 0 ]; then
+          echo 'MongoDB did not become ready in time.'
+          exit 1
+        fi
+      done
+      uvicorn app.main:app --workers 1 --host 0.0.0.0 --port 8000
+      "
+
     volumes:
       - ./src/:/usr/src/app/
     ports:
@@ -16,6 +28,11 @@ services:
       - mongo_data:/var/lib/mongo
     ports:
       - "27017:27017"
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 300s
+      timeout: 10s
+      retries: 3
 
 volumes:
   mongo_data:
