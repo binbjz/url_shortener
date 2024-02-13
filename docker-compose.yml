@@ -9,7 +9,7 @@ services:
       while ! nc -z db 27017; do
         sleep 1
         timeout=$((timeout - 1))
-        if [ $$timeout -le 0 ]; then
+        if [ $timeout -le 0 ]; then
           echo 'MongoDB did not become ready in time.'
           exit 1
         fi
