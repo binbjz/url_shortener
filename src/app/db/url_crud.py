@@ -49,13 +49,20 @@ async def create_urls_concurrently(db: AsyncIOMotorClient, url_pairs: list[dict]
 async def get_url_by_short(db: AsyncIOMotorClient, short_url: str) -> Optional[URLModel]:
     document = await db[COLLECTION_NAME].find_one({"short_url": short_url})
 
-    return URLModel(**document) if document else None
+    return URLModel(**{**document, "id": str(document.pop("_id"))}) if document else None
 
 
-async def update_access_count(db: AsyncIOMotorClient, short_url: str) -> bool:
+async def update_access_count(db: AsyncIOMotorClient, short_url: str) -> Optional[URLInDB]:
     result = await db[COLLECTION_NAME].update_one({"short_url": short_url},
                                                   {"$inc": {"access_count": 1}})
-    return result.modified_count > 0
+
+    if result.modified_count > 0:
+        updated_record = await db[COLLECTION_NAME].find_one({"short_url": short_url})
+        if updated_record:
+            updated_record["id"] = str(updated_record.pop("_id"))
+            return URLInDB(**updated_record)
+
+    return None
 
 
 async def delete_url(db: AsyncIOMotorClient, short_url: str) -> bool:
