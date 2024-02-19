@@ -2,9 +2,10 @@ import time
 import asyncio
 import pydantic_core
 from typing import Optional
+from motor.motor_asyncio import AsyncIOMotorClient
 from app.core.config import settings
 from app.models.domain import URLModel
-from motor.motor_asyncio import AsyncIOMotorClient
+from app.models.schemas import URLInDB
 
 COLLECTION_NAME = settings.database_collection_name
 
