@@ -1,4 +1,3 @@
-from typing import Dict
 from time import time
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response, JSONResponse
@@ -11,7 +10,7 @@ class RateLimiter(BaseHTTPMiddleware):
         super().__init__(app)
         self.max_requests = max_requests
         self.period = period
-        self.requests: Dict[str, tuple[int, float]] = {}
+        self.requests: dict[str, tuple[int, float]] = {}
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         client_ip = request.client.host
