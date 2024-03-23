@@ -22,7 +22,7 @@ services:
       - "8002:8000"
 
   db:
-    image: mongo:7.0.5-jammy
+    image: mongo:7.0.7-jammy
     volumes:
       - mongo_data:/var/lib/mongo
     ports:
