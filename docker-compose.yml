@@ -20,6 +20,8 @@ services:
       - ./src/:/usr/src/app/
     ports:
       - "8002:8000"
+    depends_on:
+      - db
 
   db:
     image: mongo:7.0.7-jammy
