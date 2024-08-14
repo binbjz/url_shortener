@@ -24,7 +24,7 @@ services:
       - db
 
   db:
-    image: mongo:7.0.7-jammy
+    image: mongo:7.0.8-jammy
     volumes:
       - mongo_data:/var/lib/mongo
     ports:
