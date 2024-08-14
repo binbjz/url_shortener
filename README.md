@@ -3,13 +3,13 @@
 ## Build the image and run the container:
 
 ```sh
-$ docker-compose up -d --build
+docker-compose up -d --build
 ```
 
 ## Update the image and run unit test:
 
 ```sh
-$ docker-compose exec web pytest .
+docker-compose exec web pytest .
 ```
 
 Test out the following routes:
