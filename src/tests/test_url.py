@@ -1,7 +1,6 @@
 import pytest
 from typing import AsyncGenerator
 from httpx import AsyncClient
-from app.main import app
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -17,7 +16,7 @@ def setup_mongodb():
 
 @pytest.fixture
 async def client() -> AsyncGenerator[AsyncClient, None]:
-    async with AsyncClient(app=app, base_url="http://127.0.0.1:8000/api/v1/") as async_client:
+    async with AsyncClient(base_url="http://127.0.0.1:8000/api/v1/") as async_client:
         yield async_client
 
 
