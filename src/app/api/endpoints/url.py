@@ -18,8 +18,8 @@ url_shortener = URLShortener()
 @router.post("/shorten/", response_model=schemas.URLResponse)
 async def create_short_url(url_request: schemas.URLCreate, db: AsyncIOMotorClient = Depends(get_database_client)):
     short_url = url_shortener.add_url(url_request.long_url)
-    url_model = await create_url(db, url_request.long_url, short_url)
 
+    url_model = await create_url(db, url_request.long_url, short_url)
     return schemas.URLResponse(long_url=url_model.long_url, short_url=url_model.short_url)
 
 
@@ -30,7 +30,6 @@ async def create_short_urls(urls: list[schemas.URLCreate], db: AsyncIOMotorClien
         short_url = url_shortener.add_url(url_request.long_url)
         url_model = await create_url(db, url_request.long_url, short_url)
         responses.append(schemas.URLResponse(long_url=url_model.long_url, short_url=url_model.short_url))
-
     return responses
 
 
@@ -40,13 +39,20 @@ async def create_short_urls_concurrently(urls: list[schemas.URLCreate],
     if not urls:
         raise HTTPException(status_code=400, detail="URL list is empty")
 
-    url_pairs = [{"long_url": url_request.long_url, "short_url": url_shortener.add_url(url_request.long_url)}
-                 for url_request in urls]
+    url_pairs = [
+        {
+            "long_url": str(url_request.long_url),
+            "short_url": url_shortener.add_url(str(url_request.long_url))
+        }
+        for url_request in urls
+    ]
 
     await create_urls_concurrently(db, url_pairs)
 
-    responses = [schemas.URLResponse(long_url=pair["long_url"], short_url=pair["short_url"]) for pair in url_pairs]
-
+    responses = [
+        schemas.URLResponse(long_url=pair["long_url"], short_url=pair["short_url"])
+        for pair in url_pairs
+    ]
     return responses
 
 
@@ -56,9 +62,8 @@ async def redirect_to_long_url(short_url: str, db: AsyncIOMotorClient = Depends(
     if url_model is None:
         raise HTTPException(status_code=404, detail="URL not found")
     await update_access_count(db, short_url)
-
-    # return url_model.long_url
-    return RedirectResponse(url=url_model.long_url)
+    response_model = schemas.URLResponse.from_raw(short_url=short_url, long_url=url_model.long_url)
+    return RedirectResponse(url=response_model.long_url)
 
 
 @router.delete("/urls/delete/{short_url:path}")

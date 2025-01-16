@@ -1,6 +1,5 @@
 import time
 import asyncio
-import pydantic_core
 from typing import Optional
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.core.config import settings
@@ -21,19 +20,16 @@ async def create_url(db: AsyncIOMotorClient, long_url: str, short_url: str) -> U
         "created_at": time.time_ns(),
     }
     await db[COLLECTION_NAME].insert_one(document)
-
     return URLModel(**document)
 
 
 async def create_urls_concurrently(db: AsyncIOMotorClient, url_pairs: list[dict]) -> list[URLModel]:
     tasks = []
     for pair in url_pairs:
-        pair["created_at"] = time.time_ns()
+        pair["long_url"] = str(pair["long_url"])
+        pair["short_url"] = str(pair["short_url"])
 
-        if isinstance(pair["long_url"], pydantic_core._pydantic_core.Url):
-            pair["long_url"] = str(pair["long_url"])
-        if isinstance(pair["short_url"], pydantic_core._pydantic_core.Url):
-            pair["short_url"] = str(pair["short_url"])
+        pair["created_at"] = pair.get("created_at", time.time_ns())
 
         task = db[COLLECTION_NAME].update_one(
             {"long_url": pair["long_url"]},
@@ -53,6 +49,12 @@ async def get_url_by_short(db: AsyncIOMotorClient, short_url: str) -> Optional[U
     return URLModel(**{**document, "id": str(document.pop("_id"))}) if document else None
 
 
+async def update_access_count_bak(db: AsyncIOMotorClient, short_url: str) -> bool:
+    result = await db[COLLECTION_NAME].update_one({"short_url": short_url},
+                                                  {"$inc": {"access_count": 1}})
+    return result.modified_count > 0
+
+
 async def update_access_count(db: AsyncIOMotorClient, short_url: str) -> Optional[URLInDB]:
     result = await db[COLLECTION_NAME].update_one({"short_url": short_url},
                                                   {"$inc": {"access_count": 1}})
@@ -68,5 +70,5 @@ async def update_access_count(db: AsyncIOMotorClient, short_url: str) -> Optiona
 
 async def delete_url(db: AsyncIOMotorClient, short_url: str) -> bool:
     result = await db[COLLECTION_NAME].delete_one({"short_url": short_url})
-
     return result.deleted_count > 0
+
