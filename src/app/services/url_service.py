@@ -87,11 +87,11 @@ if __name__ == "__main__":
     print()
 
     _unique_id = uuid.uuid4().int & (1 << 64) - 1
-    print(f"unique_id:", _unique_id)
+    print(f"unique_id: {_unique_id}")
     print(f"Encode base62: {shortener.encode(_unique_id)}")
     print()
 
     id_generator = SnowflakeIDGenerator(data_center_id=0, worker_id=0)
     distributed_id = id_generator.get_id()
-    print(f"Distributed_id:", distributed_id)
+    print(f"Distributed_id: {distributed_id}")
     print(f"Encode base62: {shortener.encode(distributed_id)}")
